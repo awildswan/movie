@@ -168,8 +168,10 @@ def _windows_peak_rss_bytes() -> int:
     high-water mark for the whole process, which is the number that decides
     whether a run fits on the machine.
     """
+    if sys.platform != "win32":
+        return 0
     import ctypes
-    from ctypes import wintypes  # type: ignore
+    from ctypes import wintypes
 
     class ProcessMemoryCounters(ctypes.Structure):
         _fields_ = [
