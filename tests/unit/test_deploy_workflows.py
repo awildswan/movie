@@ -441,9 +441,9 @@ def test_the_deploy_script_prints_the_sentinels_the_workflow_greps_for() -> None
 # --- Canary: what watches the box -------------------------------------------
 
 
-def test_the_canary_runs_every_thirty_minutes_and_on_demand(canary: dict[str, Any]) -> None:
+def test_the_canary_runs_monthly_and_on_demand(canary: dict[str, Any]) -> None:
     on = triggers(canary)
-    assert on["schedule"] == [{"cron": "*/30 * * * *"}]
+    assert on["schedule"] == [{"cron": "0 0 1 * *"}]
     assert "workflow_dispatch" in on
 
 
