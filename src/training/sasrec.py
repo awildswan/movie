@@ -6,13 +6,17 @@ import hashlib
 import json
 import logging
 import os
-import resource
 import sys
 import tempfile
 import time
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
+
+try:  # `resource` is Unix-only; Windows reports peak RSS through ctypes below.
+    import resource
+except ImportError:  # pragma: no cover - Windows
+    resource = None  # type: ignore[assignment]
 
 import mlflow
 import numpy as np
@@ -156,13 +160,62 @@ def resolve_artifact_dir() -> Path:
     return Path(raw) if raw else DEFAULT_ARTIFACT_DIR
 
 
+def _windows_peak_rss_bytes() -> int:
+    """Peak working set for this process, via the Win32 API.
+
+    Windows has no ``resource`` module. ``PeakWorkingSetSize`` from
+    ``GetProcessMemoryInfo`` is the closest equivalent to ``ru_maxrss``: a
+    high-water mark for the whole process, which is the number that decides
+    whether a run fits on the machine.
+    """
+    import ctypes
+    from ctypes import wintypes
+
+    class ProcessMemoryCounters(ctypes.Structure):
+        _fields_ = [
+            ("cb", wintypes.DWORD),
+            ("PageFaultCount", wintypes.DWORD),
+            ("PeakWorkingSetSize", ctypes.c_size_t),
+            ("WorkingSetSize", ctypes.c_size_t),
+            ("QuotaPeakPagedPoolUsage", ctypes.c_size_t),
+            ("QuotaPagedPoolUsage", ctypes.c_size_t),
+            ("QuotaPeakNonPagedPoolUsage", ctypes.c_size_t),
+            ("QuotaNonPagedPoolUsage", ctypes.c_size_t),
+            ("PagefileUsage", ctypes.c_size_t),
+            ("PeakPagefileUsage", ctypes.c_size_t),
+        ]
+
+    counters = ProcessMemoryCounters()
+    counters.cb = ctypes.sizeof(ProcessMemoryCounters)
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    psapi = ctypes.WinDLL("psapi", use_last_error=True)
+    # Without argtypes ctypes converts the int handle to a 32-bit C int, which
+    # truncates the 64-bit process handle and the call fails on x64.
+    kernel32.GetCurrentProcess.restype = wintypes.HANDLE
+    psapi.GetProcessMemoryInfo.argtypes = [
+        wintypes.HANDLE,
+        ctypes.POINTER(ProcessMemoryCounters),
+        wintypes.DWORD,
+    ]
+    psapi.GetProcessMemoryInfo.restype = wintypes.BOOL
+    ok = psapi.GetProcessMemoryInfo(
+        kernel32.GetCurrentProcess(), ctypes.byref(counters), counters.cb
+    )
+    if not ok:
+        raise OSError("GetProcessMemoryInfo failed")
+    return int(counters.PeakWorkingSetSize)
+
+
 def peak_rss_bytes() -> int:
     """This process's peak resident set size so far, in bytes.
 
     ``ru_maxrss`` is bytes on macOS and kibibytes on Linux. It is a high-water
     mark for the whole process — data loading included — which is the number
-    that decides whether a run fits on the machine.
+    that decides whether a run fits on the machine. On Windows, where
+    ``resource`` does not exist, the same number comes from the Win32 API.
     """
+    if resource is None:  # pragma: no cover - Windows
+        return _windows_peak_rss_bytes()
     peak = int(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
     return peak if sys.platform == "darwin" else peak * 1024
 
