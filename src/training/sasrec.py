@@ -169,7 +169,7 @@ def _windows_peak_rss_bytes() -> int:
     whether a run fits on the machine.
     """
     import ctypes
-    from ctypes import wintypes
+    from ctypes import wintypes  # type: ignore
 
     class ProcessMemoryCounters(ctypes.Structure):
         _fields_ = [
