@@ -27,8 +27,8 @@ name: Production canary
 
 on:
   schedule:
-    # Every 30 minutes. Scheduled runs only ever fire on the default branch.
-    - cron: "*/30 * * * *"
+    # Once a month (1st of each month at 00:00 UTC). Scheduled runs only ever fire on the default branch.
+    - cron: "0 0 1 * *"
   workflow_dispatch:
     inputs:
       run_loadcheck:

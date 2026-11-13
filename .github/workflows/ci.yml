@@ -665,7 +665,7 @@ jobs:
       # and tests/unit/test_deploy_workflows.py holds the two together — a
       # publish job and a host that disagree about the namespace is a deploy
       # that pulls a tag nobody pushed.
-      IMAGE_REPOSITORY: ghcr.io/kudratsingh/movielens-recsys
+      IMAGE_REPOSITORY: ghcr.io/awildswan/movie
     steps:
       - uses: actions/checkout@v4
 

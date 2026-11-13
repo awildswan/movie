@@ -622,7 +622,7 @@ def test_every_image_is_pulled_from_the_registry_ci_publishes_to() -> None:
     ours = [str(body["image"]) for body in SERVICES.values() if body.get("image") not in upstream]
     assert ours, "no service names an image of ours, which cannot be right"
     for image in ours:
-        assert image.startswith("${IMAGE_REPOSITORY:-ghcr.io/kudratsingh/movielens-recsys}/"), image
+        assert image.startswith("${IMAGE_REPOSITORY:-ghcr.io/awildswan/movie}/"), image
         assert image.endswith(":${IMAGE_TAG:-main}"), image
     names = {image.split("/")[-1].split(":")[0] for image in ours}
     assert names == {"api", "features", "web", "pgbouncer", "keycloak", "backup", "k6"}

@@ -269,7 +269,7 @@ services:
     build:
       context: .
       dockerfile: infra/pgbouncer/Dockerfile
-    image: ${IMAGE_REPOSITORY:-ghcr.io/kudratsingh/movielens-recsys}/pgbouncer:${IMAGE_TAG:-main}
+    image: ${IMAGE_REPOSITORY:-ghcr.io/awildswan/movie}/pgbouncer:${IMAGE_TAG:-main}
     environment:
       PGB_UPSTREAM_HOST: postgres-app
       PGB_UPSTREAM_PORT: "5432"
@@ -310,7 +310,7 @@ services:
     build:
       context: .
       dockerfile: infra/keycloak/Dockerfile
-    image: ${IMAGE_REPOSITORY:-ghcr.io/kudratsingh/movielens-recsys}/keycloak:${IMAGE_TAG:-main}
+    image: ${IMAGE_REPOSITORY:-ghcr.io/awildswan/movie}/keycloak:${IMAGE_TAG:-main}
     # `start --optimized`, never start-dev: the augmentation is baked into the
     # image, and --optimized refuses to start if a build option is contradicted
     # at runtime. No --import-realm either -- an import never overwrites an
@@ -374,7 +374,7 @@ services:
   # minutes rather than seconds.
   keycloak-provision:
     profiles: ["jobs"]
-    image: ${IMAGE_REPOSITORY:-ghcr.io/kudratsingh/movielens-recsys}/keycloak:${IMAGE_TAG:-main}
+    image: ${IMAGE_REPOSITORY:-ghcr.io/awildswan/movie}/keycloak:${IMAGE_TAG:-main}
     build:
       context: .
       dockerfile: infra/keycloak/Dockerfile
@@ -516,7 +516,7 @@ services:
     build:
       context: .
       dockerfile: infra/api/Dockerfile
-    image: ${IMAGE_REPOSITORY:-ghcr.io/kudratsingh/movielens-recsys}/api:${IMAGE_TAG:-main}
+    image: ${IMAGE_REPOSITORY:-ghcr.io/awildswan/movie}/api:${IMAGE_TAG:-main}
     # `serve`, not a spelled-out uvicorn line. The two render the same
     # process, but a bare `uvicorn ...` here lands in the entrypoint's
     # `exec "$@"` fall-through and skips the settings preflight the `serve`
@@ -587,7 +587,7 @@ services:
     build:
       context: .
       dockerfile: infra/features/Dockerfile
-    image: ${IMAGE_REPOSITORY:-ghcr.io/kudratsingh/movielens-recsys}/features:${IMAGE_TAG:-main}
+    image: ${IMAGE_REPOSITORY:-ghcr.io/awildswan/movie}/features:${IMAGE_TAG:-main}
     command:
       - "uvicorn"
       - "src.serving.model_server:app"
@@ -667,7 +667,7 @@ services:
       start_period: 30s
 
   feature-server:
-    image: ${IMAGE_REPOSITORY:-ghcr.io/kudratsingh/movielens-recsys}/features:${IMAGE_TAG:-main}
+    image: ${IMAGE_REPOSITORY:-ghcr.io/awildswan/movie}/features:${IMAGE_TAG:-main}
     build:
       context: .
       dockerfile: infra/features/Dockerfile
@@ -703,7 +703,7 @@ services:
     build:
       context: ./web
       dockerfile: Dockerfile
-    image: ${IMAGE_REPOSITORY:-ghcr.io/kudratsingh/movielens-recsys}/web:${IMAGE_TAG:-main}
+    image: ${IMAGE_REPOSITORY:-ghcr.io/awildswan/movie}/web:${IMAGE_TAG:-main}
     environment:
       # NODE_ENV=production comes from the image, and is load-bearing: it is
       # the production half of the fixture lockout. Deploy from the committed
@@ -762,7 +762,7 @@ services:
   # ALTER TABLE ... FORCE ROW LEVEL SECURITY and the 0010 backfill work.
   release:
     profiles: ["jobs"]
-    image: ${IMAGE_REPOSITORY:-ghcr.io/kudratsingh/movielens-recsys}/api:${IMAGE_TAG:-main}
+    image: ${IMAGE_REPOSITORY:-ghcr.io/awildswan/movie}/api:${IMAGE_TAG:-main}
     build:
       context: .
       dockerfile: infra/api/Dockerfile
@@ -812,7 +812,7 @@ services:
   # rollback's pre-deploy through instead of timing out.
   materialize:
     profiles: ["jobs"]
-    image: ${IMAGE_REPOSITORY:-ghcr.io/kudratsingh/movielens-recsys}/features:${IMAGE_TAG:-main}
+    image: ${IMAGE_REPOSITORY:-ghcr.io/awildswan/movie}/features:${IMAGE_TAG:-main}
     build:
       context: .
       dockerfile: infra/features/Dockerfile
@@ -850,7 +850,7 @@ services:
   # never Cold Start, whose zero-signal state the browser E2E set depends on.
   verify:
     profiles: ["jobs"]
-    image: ${IMAGE_REPOSITORY:-ghcr.io/kudratsingh/movielens-recsys}/api:${IMAGE_TAG:-main}
+    image: ${IMAGE_REPOSITORY:-ghcr.io/awildswan/movie}/api:${IMAGE_TAG:-main}
     build:
       context: .
       dockerfile: infra/api/Dockerfile
@@ -909,7 +909,7 @@ services:
   # on the command line. An unreachable target is a hard failure, never a skip.
   canary:
     profiles: ["jobs"]
-    image: ${IMAGE_REPOSITORY:-ghcr.io/kudratsingh/movielens-recsys}/api:${IMAGE_TAG:-main}
+    image: ${IMAGE_REPOSITORY:-ghcr.io/awildswan/movie}/api:${IMAGE_TAG:-main}
     build:
       context: .
       dockerfile: infra/api/Dockerfile
@@ -959,7 +959,7 @@ services:
       dockerfile: infra/k6/Dockerfile
       args:
         K6_VERSION: ${K6_VERSION:-2.1.0}
-    image: ${IMAGE_REPOSITORY:-ghcr.io/kudratsingh/movielens-recsys}/k6:${IMAGE_TAG:-main}
+    image: ${IMAGE_REPOSITORY:-ghcr.io/awildswan/movie}/k6:${IMAGE_TAG:-main}
     environment:
       BASE_URL: http://api:8000
       KEYCLOAK_URL: http://keycloak:8080
@@ -990,7 +990,7 @@ services:
     build:
       context: .
       dockerfile: infra/backup/Dockerfile
-    image: ${IMAGE_REPOSITORY:-ghcr.io/kudratsingh/movielens-recsys}/backup:${IMAGE_TAG:-main}
+    image: ${IMAGE_REPOSITORY:-ghcr.io/awildswan/movie}/backup:${IMAGE_TAG:-main}
     environment:
       PGHOST_APP: postgres-app
       PGUSER_APP: migrator
@@ -1036,7 +1036,7 @@ services:
   # newest migration, and asserts the schema step applies nothing and exits 0.
   rollback-rehearsal:
     profiles: ["jobs"]
-    image: ${IMAGE_REPOSITORY:-ghcr.io/kudratsingh/movielens-recsys}/api:${IMAGE_TAG:-main}
+    image: ${IMAGE_REPOSITORY:-ghcr.io/awildswan/movie}/api:${IMAGE_TAG:-main}
     build:
       context: .
       dockerfile: infra/api/Dockerfile

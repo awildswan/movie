@@ -60,7 +60,7 @@ PROD_COMPOSE = REPO_ROOT / "docker-compose.prod.yml"
 # The GHCR namespace every published image lives under. Lowercase because GHCR
 # namespaces are, while the repository is `MovieLens-RecSys` — which is why the
 # publish job cannot interpolate `github.repository` and carries the literal.
-IMAGE_REPOSITORY = "ghcr.io/kudratsingh/movielens-recsys"
+IMAGE_REPOSITORY = "ghcr.io/awildswan/movie"
 
 # The one lane to the box. deploy-production.yml and production-canary.yml share
 # it so a canary cannot read a stack that is mid-release.
